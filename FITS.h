@@ -674,7 +674,7 @@ do this either).
         private: //## implementation
       };
       
-        FITS (const String &name, RWmode rwmode = Read, bool readDataFlag = false, const std::vector<String>& primaryKeys = std::vector<String>());
+        FITS (const String &name, RWmode rwmode = Read, bool readDataFlag = false, const std::vector<String>& primaryKeys = std::vector<String>(), int fd = -1);
         //  Open a file and read a specified HDU.
         //
         //  Optional parameter allows the reading of specified primary HDU keys.
@@ -692,7 +692,7 @@ do this either).
         FITS (const String &name, RWmode rwmode, const std::vector<String>& hduNames, const std::vector<std::vector<String> >& hduKeys, bool readDataFlag = false, const std::vector<String>& primaryKeys = std::vector<String>(), const std::vector<int>& hduVersions = std::vector<int>());
         //  Writing constructor. Takes a name and information to create an empty
         //  Primary HDU which can then be filled with calls to HDU methods.
-        FITS (const String& name, int bitpix, int naxis, long *naxes);
+        FITS (const String& name, int bitpix, int naxis, long *naxes, int fd = -1);
         //  Open a file and read a specified HDU.
         //
         //  Optional parameter allows the reading of specified primary HDU keys.
@@ -728,6 +728,7 @@ do this either).
         void read (const std::vector<String>& searchKeys, const std::vector<String> &searchValues, bool readDataFlag = false, const std::vector<String>& hduKeys = std::vector<String>(), int version = 1);
         ExtHDU& currentExtension ();
         ExtHDU& extension (int i);
+        int extensionCount() const;
         const ExtHDU& extension (int i) const;
         ExtHDU& extension (const String& hduName, int version = 1);
         const ExtHDU& extension (const String& hduName, int version = 1) const;
@@ -830,6 +831,7 @@ do this either).
         PHDU* m_pHDU;
         ExtMap m_extension;
         fitsfile* m_fptr;
+        int m_fileDescriptor = -1;
         
 
       // ## Additional Implementation Declarations

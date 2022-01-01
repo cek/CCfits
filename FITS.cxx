@@ -88,10 +88,10 @@ namespace CCfits {
   // Class CCfits::FITS 
   bool FITS::s_verboseMode = false;
 
-  FITS::FITS (const String &fileName, RWmode rwmode, bool readDataFlag, const std::vector<String>& primaryKeys)
+  FITS::FITS (const String &fileName, RWmode rwmode, bool readDataFlag, const std::vector<String>& primaryKeys, int fd)
   : m_currentCompressionTileDim(0),
     m_mode(rwmode), m_currentExtensionName(""), m_filename(fileName),
-    m_pHDU(0), m_extension(), m_fptr(0)
+    m_pHDU(0), m_extension(), m_fptr(0), m_fileDescriptor(fd)
   {
     if (rwmode == Read) 
     {
@@ -256,10 +256,10 @@ namespace CCfits {
     }
   }
 
-  FITS::FITS (const String& fileName, int bitpix, int naxis, long *naxes)
+  FITS::FITS (const String& fileName, int bitpix, int naxis, long *naxes, int fd)
   : m_currentCompressionTileDim(0),
     m_mode(Write), m_currentExtensionName(""), m_filename(fileName),
-    m_pHDU(0), m_extension(), m_fptr(0)
+    m_pHDU(0), m_extension(), m_fptr(0), m_fileDescriptor(fd)
   {
     std::vector<long>    va_naxes(naxis);
     std::copy(&naxes[0],&naxes[naxis],va_naxes.begin());
@@ -646,7 +646,17 @@ namespace CCfits {
   int status=0;
   // unused:  bool silentMode = true;
 
-  status = fits_open_file(&m_fptr, name().c_str(), rwmode, &status);
+  if (m_fileDescriptor >= 0)
+  {
+    status = OPEN_FD;
+    char buf[16];
+    sprintf(buf, "%d", m_fileDescriptor);
+    status = fits_open_file(&m_fptr, buf, rwmode, &status);
+  }
+  else
+  {
+    status = fits_open_file(&m_fptr, name().c_str(), rwmode, &status);
+  }
 
   if (status != 0)  
   {
@@ -687,7 +697,15 @@ namespace CCfits {
      // If '[]' extended syntax is used this returns an error of
      // one kind or another (which includes FILE_NOT_CREATED if
      // the file already exists).
-     fits_create_file(&m_fptr,fName.c_str(),&status);
+     if (m_fileDescriptor >= 0)
+     {
+         status = OPEN_FD;
+         fits_create_file(&m_fptr, std::to_string(m_fileDescriptor).c_str(), &status);
+     }
+     else
+     {
+        fits_create_file(&m_fptr,fName.c_str(),&status);
+     }
      if ( status )
      {
         // The open function must succeed, else we're left with
@@ -720,6 +738,11 @@ namespace CCfits {
     status = fits_close_file(m_fptr, &status);
     if (!status) m_fptr = 0;
     return status;
+  }
+
+  int FITS::extensionCount() const
+  {
+      return (int)m_extension.size();
   }
 
   const ExtHDU& FITS::extension (int i) const
@@ -1018,7 +1041,10 @@ namespace CCfits {
     // close the file associated with this FITS object if it is open.
     // close () can't throw because it only calls cfitsio's close function,
     // so error messages are handled here.
-    close();
+    if (m_fileDescriptor < 0)
+    {
+        close();
+    }
 
     // destroyPrimary and destroyExtensions call delete which is guaranteed nothrow,
     // destroyExtensions also calls multimap::clear

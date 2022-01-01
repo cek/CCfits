@@ -92,7 +92,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-bin_PROGRAMS = cookbook$(EXEEXT)
+#bin_PROGRAMS = cookbook$(EXEEXT)
+# Don't build cookbook due to static lib issues
+bin_PROGRAMS =
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/config/m4/ac_check_package.m4 \
