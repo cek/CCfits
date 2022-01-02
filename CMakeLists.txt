@@ -21,6 +21,10 @@ SET(LIB_NAME CCfits)
 # Define
 IF(MSVC)
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
+    ADD_COMPILE_OPTIONS($<$<CONFIG:>:/MT>
+                        $<$<CONFIG:Debug>:/MTd>
+                        $<$<CONFIG:Release>:/MT>
+                        $<$<CONFIG:RelWithDebInfo>:/MT>)
 ENDIF()
 
 #add_subdirectory (src)
