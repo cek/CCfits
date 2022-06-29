@@ -29,7 +29,7 @@ ENDIF()
 
 #add_subdirectory (src)
 
-find_package(CFITSIO REQUIRED)
+#find_package(CFITSIO REQUIRED)
 INCLUDE_DIRECTORIES(${CFITSIO_INCLUDE_DIR})
 
 SET (LIB_TYPE STATIC)
