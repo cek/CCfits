@@ -6,6 +6,7 @@ set (CMAKE_CXX_STANDARD 11)
 
 # Allow the developer to select whether to build Dynamic or Static libraries
 OPTION (BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
+OPTION (USE_DLL_RUNTIME "Use MD/MDd runtime options" ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
 set (LIB_DESTINATION "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
@@ -21,10 +22,17 @@ SET(LIB_NAME CCfits)
 # Define
 IF(MSVC)
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
-    ADD_COMPILE_OPTIONS($<$<CONFIG:>:/MT>
-                        $<$<CONFIG:Debug>:/MTd>
-                        $<$<CONFIG:Release>:/MT>
-                        $<$<CONFIG:RelWithDebInfo>:/MT>)
+    IF(USE_DLL_RUNTIME)
+        ADD_COMPILE_OPTIONS($<$<CONFIG:>:/MD>
+                            $<$<CONFIG:Debug>:/MDd>
+                            $<$<CONFIG:Release>:/MD>
+                            $<$<CONFIG:RelWithDebInfo>:/MD>)
+    ELSE()
+        ADD_COMPILE_OPTIONS($<$<CONFIG:>:/MT>
+                            $<$<CONFIG:Debug>:/MTd>
+                            $<$<CONFIG:Release>:/MT>
+                            $<$<CONFIG:RelWithDebInfo>:/MT>)
+    ENDIF()
 ENDIF()
 
 #add_subdirectory (src)
